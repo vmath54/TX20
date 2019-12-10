@@ -204,10 +204,10 @@ int RPi_TX20_Initialize(int mode)
 // fin du programme. On remet le GPIO dans un etat 'normal'
 void RPi_TX20_Terminate (int mode)
 {
-	if (mode == TX20_MODE_ASYNC)
-	{
+	//if (mode == TX20_MODE_ASYNC)
+	//{
 		TX20_DTR_SET_HIGH;		// stop datas
-	}
+	//}
 	//bcm2835_gpio_set_pud(TX20DATA, BCM2835_GPIO_PUD_OFF);  // on retire le pulldown
 	bcm2835_close();
 }

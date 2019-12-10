@@ -10,7 +10,7 @@ cd $DIR
 
 . ./mysql.sh
 
-SQLrequest " DELETE FROM wind WHERE date < NOW() - INTERVAL 12 ;"
+SQLrequest " DELETE FROM wind WHERE date < NOW() - INTERVAL 2 DAY ;"
 SQLrequest " DELETE FROM badframes WHERE date < NOW() - INTERVAL 5 DAY ;"
 
 

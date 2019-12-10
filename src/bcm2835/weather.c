@@ -429,7 +429,7 @@ int main (int argc, char *argv[])
 
 		if (updateDB && (lgf.SQLupdate == 0) && (time(NULL) - lgf.lastSQLupdate >= SQL_DELAY))  // ajout BdeD
 		{				
-			if (! updateSQL("wind", orientation, (float) WindSpeed / 10))
+			if (! updateSQL("wind", lgf.orientation, (float) lgf.WindSpeed / 10))
 			{
 				if (--mysql_max_errors < 0)
 					doExit(1);
@@ -440,6 +440,7 @@ int main (int argc, char *argv[])
 				lgf.SQLupdate = 1;				// pour ne pas enregistrer 2 fois la même trame
 				nbUpdateSQL++;
 			}
+			updateSQL("last5min", lgf.orientation, (float) lgf.WindSpeed / 10);
 		}
 
 		//bcm2835_delay(1000);		// pause, en micro secondes. NE PAS UTILISER :  perturbe fortement le calcul de temps de clock_gettime.
@@ -457,7 +458,7 @@ int main (int argc, char *argv[])
 				doExit(1);
 			}
 			nbUpdateSQL++;
-			updateSQL("last5min", orientation, (float) WindSpeed / 10);
+			updateSQL("last5min", lgf.orientation, (float) lgf.WindSpeed / 10);
 		}
 		
 		if (! updateSQLbadframes("badframes", duration, nbUpdateSQL, frames, badframes))
