@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#   Ce script supprime tous les enregistrements de la table 'wind' plus vieux de 12h
+#   Ce script supprime tous les enregistrements de la table 'wind' plus vieux de 2 jours
 #   et les enregistrements de la table 'badframes' plus vieux de 5 jours
 #
 
