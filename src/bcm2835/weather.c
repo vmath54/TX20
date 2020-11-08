@@ -18,7 +18,7 @@
 	Si execution avec l'option '-u' ou '--updateDB', les infos de la station alimentent une base mysql.
 	   Dans ce cas, il faut que les variables d'environnement suivantes soient positionnees avant execution :
 			DB_HOST . DB_PORT . DB_USER . DB_PASSWORD . DB_BASE.
-			
+
 	Dans ce programme :
 	  . WindDirection : direction du vent. valeur de 0 a 15, depuis le Nord, par pas de 1/16 de 360° (donc, 22.5°)
       . WindSpeed     :  vitesse du vent, en 1/10 eme de m/s
@@ -67,7 +67,7 @@ void sig_handler(int signo)
 {
     printf("Interruption du programme\n");
     haltOnInterrupt = 1;
-	
+
 	if (signo == SIGQUIT)				// ne sert qu'a eviter un warning 'unused parameter' lors de la compil
         printf("received SIGQUIT\n");
 }
@@ -78,7 +78,7 @@ void doExit(int code)
 	RPi_TX20_Terminate(TX20mode);
     if (mysql != NULL)
 		mysql_close(mysql);
-	
+
 	if (fdLock != -1)			// on deverroulle le fichier PIDfile, et on le ferme
 	{
 		close(fdLock);
@@ -222,12 +222,12 @@ int updateSQL(char *table, int orientation, float WindSpeed)
 {
     int ret;
 	char txt_query[256];
-	
+
 	if (mysql == NULL)
 	{
 		mysql_connect(mysql);
 	}
-	
+
     sprintf(txt_query, "INSERT INTO `%s`(`date`, `direction`, `speed`) VALUES (NOW(),'%d','%.1f')", table, orientation, WindSpeed);
 
     if ((ret = mysql_query(mysql, txt_query)) != 0)
@@ -269,7 +269,7 @@ int updateSQLbadframes(char *table, int duration, int nbUpdateSQL, int frames, i
 void readArgs(int argc, char *argv[], int *verbose, int *exectime, int *updateDB)
 {
 	int i;
-	
+
 	for (i = 1; i < argc ; i++)
 	{
 		if ((strcmp(argv[i],"--updateDB") == 0) || (strcmp(argv[i],"-u") == 0))
@@ -300,7 +300,7 @@ void readArgs(int argc, char *argv[], int *verbose, int *exectime, int *updateDB
 			printUsage();
 			exit(1);
 		}
-	}	
+	}
 }
 
 // --------------- programme principal -------------------------
@@ -323,19 +323,19 @@ int main (int argc, char *argv[])
 	int result;
 	int frames = 0;
 	int badframes = 0;
-	
+
 	time_t start;
 	struct timespec start_cycle, stop_cycle;
 	clockid_t clk_id = CLOCK_MONOTONIC;
-	
+
 	// on intercepte Ctrl-C, kill -15, ... pour terminer proprement
 	if (signal(SIGINT, sig_handler) == SIG_ERR)  // Ctrl-C
 		printf("\ncan't catch SIGINT\n");
     if (signal(SIGTERM, sig_handler) == SIG_ERR)  // kill -15
 		printf("\ncan't catch SIGTERM\n");
-    if (signal(SIGQUIT, sig_handler) == SIG_ERR) 
+    if (signal(SIGQUIT, sig_handler) == SIG_ERR)
 		printf("\ncan't catch SIGQUIT\n");
-	
+
 	readArgs(argc, argv, &verbose, &exectime, &updateDB);		// lecture des arguments passes au programme
 
 	printf ("debut execution %s UTC. updateDB = %d, exectime = %d, verbose = %d\n\n", getDate(), updateDB, exectime, verbose);
@@ -347,7 +347,6 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	
 	// on verifie maintenant qu'une instance de ce programme n'est pas deja en execution
 	fdLock = initGrabLockFile();
 
@@ -357,7 +356,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
-	// si option updateDB, on recupere les infos de connexion dans les variables d'environnement	
+	// si option updateDB, on recupere les infos de connexion dans les variables d'environnement
 	if (updateDB && (! getSqlInfos(&mysqlconn)))
 	{
 		fprintf(stderr, "Les informations de connexion mysql n'ont pas pu etre recuperees depuis les variables d'environnement\n");
@@ -365,9 +364,9 @@ int main (int argc, char *argv[])
 		doExit(1);
 	}
 	// printf ("host : %s, port : %d, user : %s, password : %s, base : %s\n", mysqlconn.host, mysqlconn.port, mysqlconn.user, mysqlconn.password, mysqlconn.base); exit(0);
-	
+
 	start = time(NULL);
-	
+
 	if (! RPi_TX20_Initialize(TX20mode))
 		exit(1);
 
@@ -381,10 +380,10 @@ int main (int argc, char *argv[])
 
 		frames++;
 		clock_gettime(clk_id, &start_cycle);
-		
+
 		//Read from the TX20
 		result = RPi_TX20_GetReading(TX20mode, &WindDir, &WindSpeed);
-		clock_gettime(clk_id, &stop_cycle);		
+		clock_gettime(clk_id, &stop_cycle);
 		double duration = (double) (stop_cycle.tv_sec - start_cycle.tv_sec) + (double)(stop_cycle.tv_nsec - start_cycle.tv_nsec) / 1000000000;
 
 		switch(result)
@@ -394,13 +393,13 @@ int main (int argc, char *argv[])
 				fprintf(stderr, "Erreur GPIO. %d\n", frames);
 				doExit(1);
 			}
-			
+
 			case NO_FRAME :
 			{
 				fprintf(stderr, "Pas de trame detectee apres signal DTR. %d\n", frames);
 				doExit(1);
 			}
-			
+
 			case FRAME_NOK :
 			{
 				badframes++;
@@ -410,9 +409,9 @@ int main (int argc, char *argv[])
 				printf("    %s\n", getLastDecodeFrame());
 				break;
 			}
-			
-		}		
-				
+
+		}
+
 		if (result == FRAME_OK)
 		{
 			orientation = (int) WindDir * 22.5;     // on transforme en degres
@@ -428,7 +427,7 @@ int main (int argc, char *argv[])
 		}
 
 		if (updateDB && (lgf.SQLupdate == 0) && (time(NULL) - lgf.lastSQLupdate >= SQL_DELAY))  // ajout BdeD
-		{				
+		{
 			if (! updateSQL("wind", lgf.orientation, (float) lgf.WindSpeed / 10))
 			{
 				if (--mysql_max_errors < 0)
@@ -440,15 +439,14 @@ int main (int argc, char *argv[])
 				lgf.SQLupdate = 1;				// pour ne pas enregistrer 2 fois la même trame
 				nbUpdateSQL++;
 			}
-			updateSQL("last5min", lgf.orientation, (float) lgf.WindSpeed / 10);
 		}
 
 		//bcm2835_delay(1000);		// pause, en micro secondes. NE PAS UTILISER :  perturbe fortement le calcul de temps de clock_gettime.
-		
+
 	}
-	
-	int duration = time(NULL) - start; 
-	
+
+	int duration = time(NULL) - start;
+
 	if (updateDB)
 	{
 		if (lgf.SQLupdate == 0)		// il reste une trame pour la BdD
@@ -458,15 +456,14 @@ int main (int argc, char *argv[])
 				doExit(1);
 			}
 			nbUpdateSQL++;
-			updateSQL("last5min", lgf.orientation, (float) lgf.WindSpeed / 10);
 		}
-		
+
 		if (! updateSQLbadframes("badframes", duration, nbUpdateSQL, frames, badframes))
 		{
 			doExit(1);
 		}
 	}
-		
+
 	float percent = badframes == 0 ? 0 : (float) badframes * 100 / frames;
 	printf ("fin d'exécution %s UTC. %d secondes. nb frames : %d, nb trames en erreur : %d -> %d%s\n", getDate(), duration, frames, badframes, (int) percent, "%");
 
